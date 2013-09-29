@@ -21,8 +21,7 @@
 redis = node['redisio']
 
 RedisioHelper.each_server(redis['servers']) do |current_server|
-  server_name = current_server["name"] || current_server["port"]
-  resource = resources("service[redis#{server_name}]")
+  resource = resources(RedisioHelper.resource_name(current_server))
   resource.action Array(resource.action)
   resource.action << :stop
   resource.action << :disable

@@ -62,4 +62,17 @@ module RedisioHelper
       end
     end
   end
+
+  def self.server_name(server)
+    server['name'] || server['port']
+  end
+
+  def self.service_name(server)
+    name = server_name(server)
+    /redis/i =~ name ? name : "redis#{name}"
+  end
+
+  def self.resource_name(server)
+    "service[#{service_name(server)}]"
+  end
 end

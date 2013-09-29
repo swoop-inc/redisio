@@ -40,36 +40,71 @@ fi
 
 ulimit -n <%= @ulimit %>
 
+cli () {
+    exec $CLIEXEC <%= connection_string %> $1
+}
+
+start()
+{
+    if [ -f $PIDFILE ]
+    then
+        echo "$PIDFILE exists, process is already running or crashed"
+    else
+        echo "Starting Redis server..."
+        eval $EXEC
+    fi
+}
+
+stop()
+{
+    if [ ! -f $PIDFILE ]
+    then
+        echo "$PIDFILE does not exist, process is not running"
+    else
+        PID=$(cat $PIDFILE)
+        echo "Stopping ..."
+
+        <%= "$CLIEXEC #{connection_string} save" if @shutdown_save %>
+        $CLIEXEC <%= connection_string %> shutdown
+
+        while [ -x /proc/${PID} ]
+        do
+            echo "Waiting for Redis to shutdown ..."
+            sleep 1
+        done
+        echo "Redis stopped"
+    fi
+}
+
+restart () {
+	stop
+	start
+}
+
+RETVAL=0
+
 case "$1" in
-    start)
-        if [ -f $PIDFILE ]
-        then
-                echo "$PIDFILE exists, process is already running or crashed"
-        else
-                echo "Starting Redis server..."
-                eval $EXEC
-        fi
-        ;;
-    stop)
-        if [ ! -f $PIDFILE ]
-        then
-                echo "$PIDFILE does not exist, process is not running"
-        else
-                PID=$(cat $PIDFILE)
-                echo "Stopping ..."
-
-                <%= "$CLIEXEC #{connection_string} save" if @shutdown_save %>                 
-                $CLIEXEC <%= connection_string %> shutdown
-
-                while [ -x /proc/${PID} ]
-                do
-                    echo "Waiting for Redis to shutdown ..."
-                    sleep 1
-                done
-                echo "Redis stopped"
-        fi
-        ;;
-    *)
-        echo "Please use start or stop as first argument"
-        ;;
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    restart
+    ;;
+  cli)
+    cli
+    ;;
+  info)
+    cli info
+    ;;
+  monitor)
+    cli monitor
+    ;;
+  *)
+    echo "Usage: $0 {cli|info|monitor|start|stop|restart}"
+    RETVAL=1
 esac
+
+exit $RETVAL

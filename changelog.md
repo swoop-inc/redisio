@@ -3,6 +3,7 @@ redisio CHANGE LOG
 
 Unreleased
 ---
+  - Improves service administration. [Thanks to ssimeonov]
   - Allows servers to be specified as a Hash or Array. [Thanks to ssimeonov]
 
 1.7.0 - Released 7/25/2013
