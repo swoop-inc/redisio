@@ -1,7 +1,7 @@
 redisio CHANGE LOG
 ===
 
-Unreleased
+1.8.0 - Unreleased
 ---
   - Improves service administration. [Thanks to ssimeonov]
   - Allows servers to be specified as a Hash or Array. [Thanks to ssimeonov]
