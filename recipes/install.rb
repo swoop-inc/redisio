@@ -25,6 +25,7 @@ location = "#{redis['mirror']}/#{redis['base_name']}#{redis['version']}.#{redis[
 redis_instances = redis['servers']
 if redis_instances.nil?
   redis_instances = [{'port' => '6379'}]
+  node.set['redisio']['servers'] = redis_instances
 end
 
 redisio_install "redis-servers" do
@@ -38,7 +39,7 @@ redisio_install "redis-servers" do
 end
 
 # Create a service resource for each redis instance, named for the port it runs on.
-redis_instances.each do |current_server|
+RedisioHelper.each_server(redis_instances) do |current_server|
   server_name = current_server['name'] || current_server['port']
   job_control = current_server['job_control'] || redis['default_settings']['job_control'] 
 
@@ -65,5 +66,4 @@ redis_instances.each do |current_server|
 
 end
 
-node.set['redisio']['servers'] = redis_instances 
 

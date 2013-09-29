@@ -63,7 +63,7 @@ def configure
   version_hash = RedisioHelper.version_to_hash(new_resource.version)
 
   #Setup a configuration file and init script for each configuration provided
-  new_resource.servers.each do |current_instance|
+  RedisioHelper.each_server(new_resource.servers) do |current_instance|
 
     #Retrieve the default settings hash and the current server setups settings hash.
     current_instance_hash = current_instance.to_hash

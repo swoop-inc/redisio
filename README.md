@@ -80,9 +80,9 @@ run_list *%w[
 
 default_attributes({
   'redisio' => {
-    'servers' => [
-      {'name' => 'master', 'port' => '6379', 'unixsocket' => '/tmp/redis.sock', 'unixsocketperm' => '755'},
-    ]
+    'servers' => {
+      'master' => {'name' => 'master', 'port' => '6379', 'unixsocket' => '/tmp/redis.sock', 'unixsocketperm' => '755'},
+    }
   }
 })
 ```
@@ -97,10 +97,10 @@ run_list *%w[
 
 default_attributes({
   'redisio' => {
-    'servers' => [
-      {'port' => '6379'},
-      {'port' => '6380', 'slaveof' => { 'address' => '127.0.0.1', 'port' => '6379' }}
-    ]
+    'servers' => {
+      'default' => {'port' => '6379'},
+      'another' => {'port' => '6380', 'slaveof' => { 'address' => '127.0.0.1', 'port' => '6379' }}
+    }
   }
 })
 ```
@@ -116,7 +116,9 @@ run_list *%w[
 default_attributes({
   'redisio' => {
     'default_settings' => {'datadir' => '/mnt/redis'},
-    'servers' => [{'port' => '6379'}, {'port' => '6380', 'name' => "MyInstance"}]
+    'servers' => {
+      'default' => {'port' => '6379'},
+      'my_instance' => {'port' => '6380', 'name' => "MyInstance"}}
   }
 })
 ```
@@ -132,11 +134,11 @@ run_list *%w[
 default_attributes({
   'redisio' => {
     'default_settings' => { 'datadir' => '/mnt/redis/'},
-    'servers' => [
-      {'port' => '6379','backuptype' => 'aof'},
-      {'port' => '6380','backuptype' => 'both'}
-      {'port' => '6381','backuptype' => 'rdb', 'datadir' => '/mnt/redis6381'}
-    ]
+    'servers' => {
+      'aof_only' => {'port' => '6379', 'backuptype' => 'aof'},
+      'really_important' => {'port' => '6380','backuptype' => 'both'},
+      'rdb' => {'port' => '6381','backuptype' => 'rdb', 'datadir' => '/mnt/redis6381'}
+    }
   }
 })
 ```
@@ -305,7 +307,7 @@ Available options and their defaults
 'includes'               => nil
 ```
 
-* `redisio['servers']` - An array where each item is a set of key value pairs for redis instance specific settings.  The only required option is 'port'.  These settings will override the options in 'default_settings', if it is left empty it will default to [{'port' => '6379'}]
+* `redisio['servers']` - A Hash or Array where each item is a set of key value pairs for redis instance specific settings.  The only required option is 'port'.  These settings will override the options in 'default_settings', if it is left empty it will default to `[{'port' => '6379'}]`. Using a Hash is preferred because it works better with Chef's attribute merge semantics. **Note:** the hash keys are ignored: they exist merely as a convenience for managing attribute overrides through Chef. If you want to name your Redis instance, you still need to provide `name` inside the server options hash.
 
 The redis_gem recipe  will also allow you to install the redis ruby gem, these are attributes related to that, and are in the redis_gem attributes file.
 
@@ -354,7 +356,7 @@ Attribute Parameters
 * `user` - the user to run redis as, and to own the redis files
 * `group` - the group to own the redis files
 * `default_settings` - a hash of the default redis server settings
-* `servers` - an array of hashes containing server configurations overrides (port is the only required)
+* `servers` - an Array or Hash of hashes containing server configurations overrides (port is the only required)
 * `safe_install` - a true or false value which determines if a version of redis will be installed if one already exists, defaults to true
 
 This resource expects the following naming conventions:
@@ -379,8 +381,7 @@ Actions:
 
 Attribute Parameters
 
-* `servers` - an array of hashes containing the port number of instances to remove along with the binarires.  (it is fine to pass in the same hash you used to install, even if there are additional
-              only the port is used)
+* `servers` - an Array or Hash of hashes containing the port number of instances to remove along with the binarires.  (it is fine to pass in the same hash you used to install, even if there are additional only the port is used)
 
 ```ruby
 uninstall "redis" do
@@ -409,4 +410,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-

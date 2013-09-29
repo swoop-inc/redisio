@@ -20,7 +20,7 @@
 
 redis = node['redisio']
 
-redis['servers'].each do |current_server|
+RedisioHelper.each_server(redis['servers']) do |current_server|
   server_name = current_server["name"] || current_server["port"]
   resource = resources("service[redis#{server_name}]")
   resource.action Array(resource.action)
