@@ -20,9 +20,8 @@
 
 redis = node['redisio']
 
-redis['servers'].each do |current_server|
-  server_name = current_server["name"] || current_server["port"]
-  resource = resources("service[redis#{server_name}]")
+RedisioHelper.each_server(redis['servers']) do |current_server|
+  resource = resources(RedisioHelper.resource_name(current_server))
   resource.action Array(resource.action)
   resource.action << :start
   resource.action << :enable

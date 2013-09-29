@@ -63,7 +63,7 @@ def configure
   version_hash = RedisioHelper.version_to_hash(new_resource.version)
 
   #Setup a configuration file and init script for each configuration provided
-  new_resource.servers.each do |current_instance|
+  RedisioHelper.each_server(new_resource.servers) do |current_instance|
 
     #Retrieve the default settings hash and the current server setups settings hash.
     current_instance_hash = current_instance.to_hash
@@ -88,7 +88,10 @@ def configure
     descriptors = current['ulimit'] == 0 ? current['maxclients'] + 32 : current['maxclients']
 
     recipe_eval do
-      server_name = current['name'] || current['port']
+      server_name = RedisioHelper.server_name(current)
+      service_name = RedisioHelper.service_name(current)
+      resource_name = RedisioHelper.resource_name(current)
+
       piddir = "#{base_piddir}/#{server_name}"
       aof_file = "#{current['datadir']}/appendonly-#{server_name}.aof"
       rdb_file = "#{current['datadir']}/dump-#{server_name}.rdb"
@@ -208,11 +211,14 @@ def configure
           :clusternodetimeout     => current['cluster-node-timeout'],
           :includes               => current['includes']
         })
+        if resources.include? resource_name
+          notifies :restart, resource_name
+        end
       end
       #Setup init.d file
       bin_path = "/usr/local/bin"
       bin_path = ::File.join(node['redisio']['install_dir'], 'bin') if node['redisio']['install_dir']
-      template "/etc/init.d/redis#{server_name}" do
+      template "/etc/init.d/#{service_name}" do
         source 'redis.init.erb'
         cookbook 'redisio'
         owner 'root'
@@ -234,8 +240,11 @@ def configure
           :ulimit => descriptors
           })
         only_if { current['job_control'] == 'initd' }
+        if resources.include? resource_name
+          notifies :restart, resource_name
+        end
       end
-      template "/etc/init/redis#{server_name}.conf" do
+      template "/etc/init/#{service_name}.conf" do
         source 'redis.upstart.conf.erb'
         cookbook 'redisio'
         owner current['user']
@@ -258,6 +267,9 @@ def configure
           :unixsocket => current['unixsocket']
         })
         only_if { current['job_control'] == 'upstart' }
+        if resources.include? resource_name
+          notifies :restart, resource_name
+        end
       end
     end
   end # servers each loop

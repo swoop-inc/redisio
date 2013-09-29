@@ -37,7 +37,7 @@ attribute :user, :kind_of => String, :default => 'redis'
 attribute :group, :kind_of => String, :default => 'redis'
 
 attribute :default_settings, :kind_of => Hash
-attribute :servers, :kind_of => Array
+attribute :servers, :kind_of => Enumerable
 
 def initialize(name, run_context=nil)
   super

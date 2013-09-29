@@ -38,15 +38,41 @@ module RedisioHelper
   end
 
   def self.version_to_hash(version_string)
-    version_array = version_string.split('.') 
+    version_array = version_string.split('.')
     version_array[2] = version_array[2].split("-")
     version_array.flatten!
-    version_hash = { 
+    version_hash = {
         :major => version_array[0],
         :minor => version_array[1],
         :tiny => version_array[2],
         :rc => version_array[3]
     }
   end
-end
 
+  def self.each_server(servers)
+    unless servers.nil?
+      if servers.respond_to?(:each_pair)
+        servers.each_pair do |_, server|
+          yield server
+        end
+      else
+        servers.each do |server|
+          yield server
+        end
+      end
+    end
+  end
+
+  def self.server_name(server)
+    server['name'] || server['port']
+  end
+
+  def self.service_name(server)
+    name = server_name(server)
+    /redis/i =~ name ? name : "redis#{name}"
+  end
+
+  def self.resource_name(server)
+    "service[#{service_name(server)}]"
+  end
+end

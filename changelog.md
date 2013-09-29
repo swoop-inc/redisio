@@ -1,6 +1,11 @@
 redisio CHANGE LOG
 ===
 
+1.8.0 - Unreleased
+---
+  - Improves service administration. [Thanks to ssimeonov]
+  - Allows servers to be specified as a Hash or Array. [Thanks to ssimeonov]
+
 1.7.0 - Released 7/25/2013
 ---
   - Adds support for address attribute as an array or string.  This is to support the feature that will be introduced in redis 2.8
